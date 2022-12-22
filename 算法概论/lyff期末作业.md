@@ -1,0 +1,359 @@
+# 题目一
+
+## 解题思路
+
+将数组分为两个部分：有序区和无序区，将无序区第一个取出来，用一个变量储存，从右到左进行有序区比较，如果有序区内数据比较无序区第一个数据大，则有序区内数据进行后挪一位操作，直到找到比无序区第一个数据小的数据或到达有序区第一个位置，那么它后面一个位置就是这个无序区第一个数据在有序区内的位置，将该数据放入该位置，有序区增大。
+
+## 代码实现
+```
+#include<iostream>
+using namespace std;
+void Insert_Sort(int arr[], int length)
+{
+	if (arr == nullptr || length <= 0)
+		return;
+	int j;
+	int temp;
+	for (int i = 1; i < length; ++i)
+	{
+		temp = arr[i];
+		for (j = i - 1; j >= 0; --j)
+		{
+			if (arr[j] <= temp)	
+				break;
+			arr[j + 1] = arr[j];
+		}
+		arr[j + 1] = temp;
+		cout << "第" << i << "次交换：";//对于第几次输出的输出
+		for (int i = 0; i < length; ++i)
+			cout << arr[i] << "  ";
+		cout << endl;
+	}
+}
+int main(int argc, char* argv[])
+{
+	const int length = 6;
+	int numbers[length] = { 50，56，7，3，11，9 };
+
+	Insert_Sort(numbers, length);
+	cout << "排序完成：";
+	for (int i = 0; i < length; i++)
+		cout << numbers[i] << "  ";
+
+	cout << endl;
+	return 0;
+}  
+```
+JSRUN:http://jsrun.net/vd7Kp/edit
+
+
+## 测试数据
+```
+int numbers[length] = { 50，56，7，3，11，9 };
+```
+## 算法效率分析
+
+时间效率：最好：O（n）最坏：O（n²）
+空间效率：O（1）
+
+## 稳定性
+
+插入排序时，选择将后面出现的元素，插入到前面出现的相同元素的后面就可以保持原有的前后顺序不变，所以插入排序时稳定的排序算法
+
+
+
+# 题目二
+
+## 思路
+
+用约束条件判断，如果满足条件，再对其进一步构造，避免搜索所有的可能解，减少时间，在解空间树中，从初识状态(根节点)出发，遵循深度优先遍历策略，探索满足约束条件的解。
+
+## 代码实现
+```
+#include<stdio.h>
+#include<iostream>
+#define n 5//多少物品
+int w[n] = {6,5,4,2,1};//重量
+int v[n] = {5,3,5,3,2};//价值
+int c = 10;//背包限重
+int flag[n],best[n];
+int temp;
+int max;
+int maxvalue;//最大价值
+int rest;
+void nfs(int m)
+{
+    int i;
+    if(m == n){
+        if(temp > max){
+            max = temp;
+            for(i = 0;i < n;i ++){
+                best[i] = flag[i];
+            }
+        }
+        return;
+    }
+    if(temp + rest > max){
+        if(temp + w[m] <= c){
+            temp += w[m];
+            flag[m] = 1;
+            rest -= w[m];
+            nfs(m + 1);
+            rest += w[m];
+            temp -= w[m];
+        }
+        rest -= w[m];
+        flag[m] = 0;
+        nfs(m + 1);
+        rest += w[m];
+    }
+    
+}
+int main()
+{
+    int i;
+    temp = 0;
+    rest = 0;
+    for(i = 0;i < n;i ++)
+        rest += w[i];
+    nfs(0);
+    
+    for(i = 0;i < n;i ++){
+        if(best[i] == 1){
+            std::cout<<"选择物品第"<< i+1 <<"个 重量为"<<w[i]<<" ";
+            maxvalue += v[i];
+        }
+    }
+    std::cout<<"最大价值为："<<max<<std::endl;
+    std::cout<<std::endl;
+    return 0;
+}   
+```
+JSRUN:https://jsrun.net/6d7Kp/edit
+
+## 测试数据
+
+```
+#define n 5//物品数量
+int w[n] = {6,5,4,2,1};//物品重量
+int v[n] = {5,3,5,3,2};//物品价值
+int c = 10;//背包最大限重
+```
+## 算法效率分析
+
+
+时间效率：O（n）
+空间效率：O（n）
+
+
+
+# 题目三
+
+## 思路
+
+正确地写出基本的递推关系式和恰当的边界条件(也就是基本方程)，找出问题的子问题，通过子问题画出网格，找出计算各网格的公式，画出符合问题要求的子问题网格，找出各网格的公式，然后递归逐步找到最优解。
+
+## 代码实现
+```
+#include<iostream>
+using namespace std;
+#include<cmath>
+#include<string>
+int V[6][11];
+int x[5];
+int max(int a,int b)
+{
+	if(a>b)
+		return a;
+	else
+		return b;	
+} 
+int KnapSack(int w[],int v[],int n,int C)
+{
+	int i,j;
+	for(i=0;i<=n;i++)//初始化第0列 
+		V[i][0]=0;
+	for(j=0;j<=C;j++)//初始化第0行 
+		V[0][j]=0;
+	for(i=1;i<=n;i++)//计算第i行，进行第i次迭代 
+	{
+		for(j=1;j<=C;j++)
+		{
+			if(j<w[i-1])
+				V[i][j]=V[i-1][j];
+			else
+				V[i][j]=max(V[i-1][j],V[i-1][j-w[i-1]]+v[i-1]);
+		}
+	}
+	for(i=n,j=C;i>0;i--)//求装入背包的物品 
+	{
+		if(V[i][j]>V[i-1][j])
+		{
+			x[i-1]=1;
+			j=j-w[i-1];
+		}
+		else
+			x[i-1]=0;
+	}
+	return V[n][C];//返回背包取得的最大价值 
+}
+int main()
+{
+	int w[5]={2,2,6,5,4};// 物品重量
+	int v[5]={6,3,5,4,6};// 物品价值
+	cout<<"背包最大价值是："<<KnapSack(w,v,5,10)<<endl;
+	cout<<"装入的物品分别是："; 
+	for(int i=0;i<5;i++)
+	{
+		if(x[i]==1)
+			cout<<"物品"<<i+1<<'\t';
+	}
+	return 0; 
+}
+```
+JSRUN:https://jsrun.net/Pd7Kp/edit
+
+
+## 测试数据
+```
+int w[5]={2,2,6,5,4};// 物品重量
+int v[5]={6,3,5,4,6};// 物品价值
+```
+
+## 算法效率分析
+
+
+时间复杂度：O（n²）
+空间复杂度：O（n）
+
+
+
+# 题目四
+
+## 思路
+把一个复杂的问题分成两个或更多的相同或相似的子问题，再把子问题分成更小的子问题......直到最后子问题可以简单的直接求解，原问题的解即子问题的解的合并。采用递归的方法。
+
+## 代码实现
+```
+#include <iostream>
+using namespace  std;
+#define MAX(a,b)    (a) > (b) ? (a) : (b)
+#define MIN(a,b)    (a) > (b) ? (b) : (a)
+
+int get_max(int* arr, int left, int right)
+{
+    int maxleft = 0, maxright = 0, mid = 0;
+    
+    if (left == right)          
+        return arr[left];
+    else if (left == right-1)   
+        return MAX(arr[left], arr[right]);
+    
+    mid = (left+right)/2;
+    maxleft = get_max(arr,left,mid);
+    maxright =get_max(arr, mid+1, right);
+    
+    return MAX(maxleft, maxright);
+}
+
+void get_min_max(int* arr, int left, int right, int* min, int * max)
+{
+    int mid = 0;
+    int lmin=0, lmax=0;
+    int rmin=0, rmax=0;
+    
+    if (left == right) {
+        *min = arr[left];
+        *max = arr[left];
+        return;             
+    } else if (left == right - 1) {
+        *min = MIN(arr[left], arr[right]);
+        *max = MAX(arr[left], arr[right]);
+        return;            
+    }
+    
+    mid = (left+right) / 2;
+    
+    get_min_max(arr, left, mid, &lmin, &lmax);
+    get_min_max(arr, mid+1, right, &rmin, &rmax);
+    
+    *min = MIN(lmin, rmin);
+    *max = MAX(lmax, rmax);
+}
+
+int main()
+{
+    int min, max;
+    int arr[] = {11, 9, 20, 56, 42, 3, 7,15,16};
+    int len = sizeof(arr)/sizeof(arr[0]);
+    
+    get_max(arr, 0, len-1);
+    get_min_max(arr, 0, len-1, &min, &max);
+    cout<<"max:"<<max<<"min:"<<min;
+    return 0;
+}   
+```
+JSRUN:https://jsrun.net/7d7Kp/edit
+
+
+## 测试数据
+```
+int arr[] = {11, 9, 20, 56, 42, 3, 7,15,16};
+```
+
+## 算法效率分析
+
+
+时间复杂度：O（n）
+空间复杂度：O（n）
+
+
+
+# 题目五
+
+## 思路
+
+贪心法在解题时不从整体最优解加以考虑它所做的仅仅是某种意义上的局部最优解贪心法并不对所有问题都能得到整体最优解，前面选择会影响后面选择的问题，贪心法无法解决。
+
+## 代码实现
+```
+#include <iostream>
+using namespace  std;
+
+void get_money(int money){
+    int hundred = money/100;
+    int fifty = (money-hundred*100)/50;
+    int ten = (money-hundred*100-fifty*50)/10;
+    int five = (money-hundred*100-fifty*50-ten*10)/5;
+    int one = money-hundred*100-fifty*50-ten*10-five*5;
+    cout <<"一共需要"<<hundred<<"张一百，"<<fifty<<"张五十，"<<ten<<"张十元，"<<five<<"张五元，"<<one<<"张一元"<<endl;
+}
+
+int get_All_Money(int a[],int len){
+    int all=0;
+    for (int i = 0; i < len; ++i) {
+        all += a[i];
+    }
+    return all;
+}
+
+int main(){
+    int a[]={2135,1862,2639,2581};
+    int len = sizeof (a)/sizeof (a[0]);
+    int all = get_All_Money(a,len);
+    get_money(all);
+    
+}  
+```
+JSRUN:https://jsrun.net/cd7Kp/edit
+
+
+## 测试数据
+```
+int a[]={2135,1862,2639,2581};
+```
+
+## 算法效率分析
+
+时间复杂度：O（1）
+空间复杂度：O（n）
